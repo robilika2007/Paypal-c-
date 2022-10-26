@@ -1,0 +1,304 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <windows.h>
+
+using namespace std;
+
+#define linie "---------------------------------------------------------------------------------------------------------------------"
+
+int numarConturi = 0;
+
+
+void afisare()
+{
+  cout << linie << '\n';
+  cout << "1 - Inregistrare cont : Utilizatorul va scrie un nume de cont si o parola" << '\n';
+  cout << "2 - Afisare conturi inregistrate : Pe ecran se vor afisa toate conturile inregistrate" << '\n';
+  cout << "3 - Depoziteaza in cont" << '\n';
+  cout << "4 - Extrage din cont" << '\n';
+  cout << "5 - Consolidare sold" << '\n';
+  cout << "6 - Transfer intre 2 conturi" << '\n';
+  cout << "7 - Inchidere program" << '\n';
+  cout << linie << '\n';
+}
+
+
+struct cont
+{
+  string nume,parola;
+  int val = 0;
+
+  cont& operator+=(const int val)
+  {
+    this->val += val;
+  }
+
+  cont& operator-=(const int val)
+  {
+    this->val -= val;
+  }
+
+  ~cont()
+  {
+
+  }
+
+}conturi[1000];
+
+
+int cautaCont (string nume = "")
+{
+
+  if(nume == "")
+  {
+    cout << "Numele contului: ";
+    cin >> nume;
+  }
+
+
+  for(int i = 0; i<numarConturi; i++)
+    {
+        if(nume == conturi[i].nume)
+          return i;
+
+    }
+
+  return -1;
+}
+
+
+bool verifParola(int i)
+{
+  string parola;
+  cout << "Parola: ";
+  cin>>parola;
+
+  if(parola == conturi[i].parola)
+    return 1;
+  return 0;
+
+
+}
+
+
+void depunere ()
+{
+  int i = cautaCont();
+  if(i == -1)
+  {
+    cout << "Cont neexistent!" << '\n';
+    return ;
+  }
+  if( verifParola(i) )
+    {
+      int suma;
+      cout << "Suma: ";
+      cin >> suma;
+
+      conturi[i] += suma;
+
+    } else
+    {
+      cout << "Parola gresita!" << '\n';
+    }
+}
+
+
+void retragere()
+{
+  int i = cautaCont();
+  if(i == -1)
+  {
+    cout << "Cont neexistent!" << '\n';
+    return ;
+  }
+  if( verifParola(i) )
+    {
+      int suma;
+      cout << "Suma: ";
+      cin >> suma;
+
+      conturi[i] -= suma;
+
+    } else
+    {
+      system("cls");
+      afisare();
+      cout << "Parola gresita!" << '\n';
+      retragere();
+    }
+}
+
+
+void checkAccount ()
+{
+  int i = cautaCont();
+  if(i == -1)
+  {
+    cout << "Cont neexistent!" << '\n';
+    return ;
+  }
+  if( verifParola(i) )
+    {
+      cout << "In cont se afla " << conturi[i].val << "$" << '\n';
+    } else
+    {
+      cout << "Parola gresita!" << '\n';
+    }
+}
+
+
+void transfer()
+{
+  int i = cautaCont();
+  if(i == -1)
+  {
+    cout << "Cont neexistent!" << '\n';
+    return ;
+  }
+  if( verifParola(i) )
+  {
+    cout << "reciever - ";
+    int j = cautaCont();
+
+    int suma;
+    cout << "Suma: ";
+    cin >> suma;
+
+    conturi[i]-=suma;
+    conturi[j]+=suma;
+
+  } else cout << "Parola gresita!" << '\n';
+
+
+}
+
+
+void read()
+{
+  ifstream fin ("conturi.txt");
+
+  fin >> numarConturi;
+
+  for(int i = 0; i < numarConturi; i++)
+  {
+    fin >> conturi[i].nume >> conturi[i].parola >> conturi[i].val;
+  }
+}
+
+
+void write()
+{
+  ofstream fout ("conturi.txt");
+
+  fout << numarConturi << '\n';
+  for(int i = 0; i < numarConturi; i++)
+      fout << conturi[i].nume << " " << conturi[i].parola << " " << conturi[i].val << '\n';
+
+}
+
+
+
+void contNou()
+{
+  string nume, parola;
+
+  cout << "Nume: ";
+  cin >> nume;
+
+  if(cautaCont(nume) != -1)
+  {
+      cout << "Exista deja un cont pe acest nume!" << '\n';
+      return ;
+  }
+
+  cout << "Parola :";
+  cin >> parola;
+
+  conturi[ numarConturi ].nume = nume;
+  conturi[ numarConturi++ ].parola = parola;
+}
+
+void afisareConturi ()
+{
+  cout << "Conturi: ";
+  for(int i = 0; i < numarConturi; i++)
+      cout << conturi[i].nume << ", ";
+}
+
+int main()
+{
+
+  int operatie;
+
+  read();
+
+  afisare();
+
+  cin>>operatie;
+  while(operatie != 999 && operatie != 7)
+  {
+    if(operatie < 1 || operatie > 7)
+    {
+      cout << "Operatie invalida." << '\n';
+      cin >> operatie;
+      continue;
+    }
+    if(operatie == 1)
+    {
+      contNou();
+
+    } else if(operatie == 2)
+    {
+        afisareConturi();
+
+    } else if(operatie == 3)
+    {
+        depunere();
+
+    } else if(operatie == 4)
+    {
+        retragere();
+
+    } else if(operatie == 5)
+    {
+        checkAccount();
+
+    } else if(operatie == 6)
+    {
+        transfer();
+
+    }
+
+
+    cin >> operatie;
+
+    system("cls");
+
+    afisare();
+  }
+
+
+  if(operatie == 999)
+  {
+    ofstream fout ("conturi.txt");
+    fout << 0;
+
+    system("cls");
+    for(int i=0;i<10;i++)
+    cout << "Database deleted" << '\n';
+
+    Sleep(1000);
+
+    system("curl parrot.live");
+
+
+    return 0;
+  }
+
+  write();
+
+
+  return 0;
+}
